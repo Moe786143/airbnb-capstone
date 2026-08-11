@@ -1,0 +1,381 @@
+/* ==========================================================================
+   Design tokens, reset, and shared primitives.
+
+   Loaded first so everything below can build on the same palette, spacing
+   scale, and typography.
+   ========================================================================== */
+
+:root {
+  /* Brand */
+  --rausch: #ff385c; /* Airbnb red — primary actions and accents */
+  --rausch-dark: #e00b41;
+  --rausch-deep: #bd1e59;
+
+  /* Neutrals */
+  --ink: #222222;
+  --ink-soft: #484848;
+  --grey: #717171;
+  --grey-light: #b0b0b0;
+  --line: #dddddd;
+  --line-soft: #ebebeb;
+  --surface: #ffffff;
+  --surface-alt: #f7f7f7;
+
+  /* Feedback */
+  --success-bg: #e8f5ec;
+  --success-ink: #0f7a3d;
+  --error-bg: #fff1f2;
+  --error-ink: #c1123c;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.16);
+
+  /* Shape */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* Layout */
+  --container: 1280px;
+  --header-height: 80px;
+}
+
+/* --- Reset ---------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: 'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+ul,
+ol {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* A single, consistent focus ring for keyboard users across the app. */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- Layout helpers ------------------------------------------------------- */
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.site-main {
+  min-height: 60vh;
+}
+
+.page {
+  padding-top: 32px;
+  padding-bottom: 64px;
+}
+
+.section {
+  padding: 48px 24px;
+}
+
+.section__title {
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin-bottom: 24px;
+}
+
+.muted {
+  color: var(--grey);
+}
+
+.align-right {
+  text-align: right;
+}
+
+/* Available to screen readers, hidden from view — used for table column
+   headings whose cells are self-describing buttons. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Buttons -------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Primary: the Airbnb-red gradient used for booking and login */
+.btn--primary {
+  background: linear-gradient(90deg, var(--rausch) 0%, var(--rausch-deep) 100%);
+  color: #fff;
+}
+
+.btn--primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--dark {
+  background: var(--ink);
+  color: #fff;
+}
+
+.btn--dark:hover {
+  background: #000;
+}
+
+.btn--outline {
+  background: transparent;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.btn--outline:hover {
+  background: var(--surface-alt);
+}
+
+.btn--white {
+  background: #fff;
+  color: var(--ink);
+}
+
+.btn--white:hover {
+  background: var(--surface-alt);
+}
+
+.btn--lg {
+  padding: 14px 26px;
+  font-size: 16px;
+  border-radius: var(--radius-sm);
+}
+
+.btn--sm {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+/* A button that reads as a link — used for "Show more" affordances */
+.link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-weight: 600;
+  text-decoration: underline;
+  color: var(--ink);
+}
+
+.link-button:hover {
+  color: var(--rausch);
+}
+
+/* --- Loading state -------------------------------------------------------- */
+
+.spinner-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 0;
+}
+
+.spinner-wrap--inline {
+  padding: 40px 0;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--line-soft);
+  border-top-color: var(--rausch);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinner-label {
+  color: var(--grey);
+  font-size: 15px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Respect a user's reduced-motion preference. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .spinner {
+    animation-duration: 2s;
+  }
+
+  .btn:active {
+    transform: none;
+  }
+}
+
+/* --- Error state ---------------------------------------------------------- */
+
+.error-box {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--error-bg);
+}
+
+.error-box__icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--error-ink);
+  color: #fff;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+.error-box__title {
+  font-size: 17px;
+  margin-bottom: 4px;
+}
+
+.error-box__message {
+  color: var(--ink-soft);
+  margin-bottom: 16px;
+}
+
+/* --- Empty state ---------------------------------------------------------- */
+
+.empty-state {
+  text-align: center;
+  padding: 64px 24px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  background: var(--surface-alt);
+}
+
+.empty-state__title {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.empty-state__text {
+  color: var(--grey);
+  margin-bottom: 20px;
+  max-width: 46ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .section {
+    padding: 32px 16px;
+  }
+
+  .section__title {
+    font-size: 24px;
+  }
+}

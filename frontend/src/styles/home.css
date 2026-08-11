@@ -1,0 +1,339 @@
+/* ==========================================================================
+   Home page: hero, inspiration grid, experiences, shop, and the tabbed
+   getaways explorer.
+   ========================================================================== */
+
+/* --- Hero ----------------------------------------------------------------- */
+
+.hero {
+  position: relative;
+  min-height: 560px;
+  display: flex;
+  align-items: center;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--ink);
+  color: #fff;
+}
+
+/* Dark gradient so the headline stays readable over any photo. */
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.45) 45%,
+    rgba(0, 0, 0, 0.18) 100%
+  );
+}
+
+.hero__content {
+  position: relative;
+  padding-top: 72px;
+  padding-bottom: 72px;
+  max-width: 720px;
+  margin-left: max(24px, calc((100vw - var(--container)) / 2 + 24px));
+  margin-right: auto;
+}
+
+.hero__eyebrow {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  opacity: 0.9;
+}
+
+.hero__title {
+  font-size: clamp(38px, 6vw, 68px);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 20px;
+}
+
+.hero__subtitle {
+  font-size: clamp(16px, 2vw, 20px);
+  line-height: 1.5;
+  max-width: 52ch;
+  margin-bottom: 32px;
+  opacity: 0.95;
+}
+
+/* --- Inspiration grid ----------------------------------------------------- */
+
+.inspiration-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.inspiration-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.inspiration-card:hover {
+  background: var(--surface-alt);
+  transform: translateY(-2px);
+}
+
+.inspiration-card__image {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  flex: none;
+  background: var(--line-soft);
+}
+
+.inspiration-card__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.inspiration-card__name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.inspiration-card__distance {
+  font-size: 14px;
+  color: var(--grey);
+}
+
+/* --- Experiences ---------------------------------------------------------- */
+
+.experiences {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.experience-card {
+  position: relative;
+  min-height: 420px;
+  display: flex;
+  align-items: flex-end;
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--ink);
+  color: #fff;
+}
+
+.experience-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 40%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+.experience-card__content {
+  position: relative;
+  max-width: 34ch;
+}
+
+.experience-card__title {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+
+.experience-card__copy {
+  font-size: 15px;
+  margin-bottom: 20px;
+  opacity: 0.95;
+}
+
+/* --- Shop Airbnb ---------------------------------------------------------- */
+
+.shop {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+  padding: 48px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-alt);
+}
+
+.shop__title {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 16px;
+}
+
+.shop__copy {
+  font-size: 16px;
+  color: var(--ink-soft);
+  margin-bottom: 24px;
+  max-width: 44ch;
+}
+
+.shop__image {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  background: var(--line-soft);
+}
+
+/* --- Tabbed getaways ------------------------------------------------------ */
+
+.tabs {
+  display: flex;
+  gap: 28px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 28px;
+  overflow-x: auto;
+  /* Let the strip scroll on narrow screens instead of wrapping awkwardly */
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs__tab {
+  position: relative;
+  padding: 12px 2px;
+  border: 0;
+  background: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--grey);
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.tabs__tab:hover {
+  color: var(--ink);
+}
+
+.tabs__tab--active {
+  color: var(--ink);
+}
+
+/* Underline marking the selected tab. */
+.tabs__tab--active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--ink);
+  border-radius: 2px;
+}
+
+/* The multi-column destination list */
+.getaway-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px 24px;
+}
+
+.getaway-list__link {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
+}
+
+.getaway-list__link:not(.getaway-list__link--static):hover {
+  background: var(--surface-alt);
+}
+
+.getaway-list__city {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.getaway-list__type {
+  font-size: 14px;
+  color: var(--grey);
+}
+
+/* Destinations with no listings behind them are visibly inert. */
+.getaway-list__link--static {
+  cursor: default;
+}
+
+.getaway-list__link--static .getaway-list__city {
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
+/* --- Responsive ----------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .inspiration-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .getaway-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .inspiration-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .experiences {
+    grid-template-columns: 1fr;
+  }
+
+  .experience-card {
+    min-height: 320px;
+    padding: 28px;
+  }
+
+  .shop {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 32px;
+  }
+
+  .getaway-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hero {
+    min-height: 440px;
+  }
+
+  .hero__content {
+    margin-left: 0;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+@media (max-width: 560px) {
+  .inspiration-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .getaway-list {
+    grid-template-columns: 1fr;
+  }
+
+  .shop__image {
+    height: 220px;
+  }
+}
