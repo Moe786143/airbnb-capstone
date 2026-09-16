@@ -3,100 +3,84 @@
    ========================================================================== */
 
 /* --- Header --------------------------------------------------------------- */
+/* Two-row layout, matching the Figma export exactly: logo + account
+   control on top, a separate row of outlined nav pills below, divided
+   from the page content by the export's measured line color (#F3F4F6). */
 
 .header {
   position: sticky;
   top: 0;
   z-index: 100;
   background: var(--surface);
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid #F3F4F6;
 }
 
-.header__inner {
+.header__top {
   max-width: var(--container);
   margin: 0 auto;
-  padding: 0 24px;
-  min-height: var(--header-height);
+  padding: 20px 24px 16px;
   display: flex;
   align-items: center;
-  gap: 24px;
+  justify-content: space-between;
 }
 
-/* Logo */
+/* Logo — icon + "airbnb" wordmark only, no subtitle, in the export's
+   measured red (#DE3151, not the app's default --rausch). */
 
 .logo {
   display: flex;
   align-items: center;
   gap: 10px;
   flex: none;
-  color: var(--rausch);
-}
-
-.logo__text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
+  color: #DE3151;
 }
 
 .logo__word {
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.4px;
 }
 
-.logo__sub {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--grey);
-}
-
-/* Navigation */
+/* Navigation — plain outlined pills, none shown as "active" in the export. */
 
 .header__nav {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 24px 20px;
   display: flex;
   align-items: center;
-  gap: 4px;
-  /* Sits between the logo and the profile control, pushed left of centre */
-  margin-right: auto;
+  gap: 12px;
 }
 
 .header__link {
-  padding: 9px 14px;
-  border-radius: var(--radius-pill);
+  box-sizing: border-box;
+  height: 37px;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #E5E7EB;
+  border-radius: 999px;
   font-size: 14px;
-  font-weight: 600;
-  color: var(--ink-soft);
+  font-weight: 400;
+  color: #374151;
   white-space: nowrap;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .header__link:hover {
   background: var(--canvas);
-  color: var(--ink);
-}
-
-/* The route currently being viewed. */
-.header__link--active {
-  background: var(--ink);
-  color: #fff;
-}
-
-.header__link--active:hover {
-  background: var(--ink);
-  color: #fff;
+  border-color: var(--grey-light);
 }
 
 /* --- Profile control ------------------------------------------------------ */
+/* Plain name text, then a hamburger + generic avatar-circle grouped in a
+   bordered pill — replaces the old "Hi, {name}" + colored-initial avatar. */
 
 .profile {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  /* When the nav is hidden (logged out) this keeps the control on the right */
-  margin-left: auto;
+  gap: 12px;
 }
 
 .profile__placeholder {
@@ -107,11 +91,21 @@
   background: var(--canvas);
 }
 
+.profile__name {
+  font-size: 14px;
+  font-weight: 400;
+  color: #000000;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .profile__trigger {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 14px 6px 6px;
+  padding: 8px 10px;
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   background: var(--surface);
@@ -123,29 +117,19 @@
   border-color: var(--grey-light);
 }
 
-.profile__avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--rausch), var(--rausch-deep));
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  display: grid;
-  place-items: center;
+.profile__hamburger {
+  color: #111827;
   flex: none;
 }
 
-.profile__greeting {
-  font-size: 14px;
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.profile__chevron {
-  color: var(--grey);
+.profile__avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #F3F4F6;
+  color: #D1D5DB;
+  display: grid;
+  place-items: center;
   flex: none;
 }
 
@@ -234,16 +218,14 @@
 /* --- Responsive ----------------------------------------------------------- */
 
 @media (max-width: 860px) {
-  .header__inner {
+  .header__top {
     flex-wrap: wrap;
     padding: 12px 16px;
     gap: 12px;
   }
 
   .header__nav {
-    order: 3;
-    width: 100%;
-    margin-right: 0;
+    padding: 0 16px 16px;
     overflow-x: auto;
     /* Let the tabs scroll rather than wrap on a narrow screen */
     scrollbar-width: none;
@@ -252,18 +234,10 @@
   .header__nav::-webkit-scrollbar {
     display: none;
   }
-
-  .profile {
-    margin-left: auto;
-  }
 }
 
 @media (max-width: 480px) {
-  .logo__sub {
-    display: none;
-  }
-
-  .profile__greeting {
+  .profile__name {
     display: none;
   }
 

@@ -5,9 +5,11 @@ import { useAuth } from '../../context/AuthContext';
 /**
  * The account control at the right of the header.
  *
- * Logged in, it greets the host by name and opens a dropdown with
- * "View reservations" and "Log out". Logged out, it shows a
- * "Become a host" link alongside the login action.
+ * Matches the Figma export: the signed-in host's name as plain text (no
+ * "Hi," greeting), then a hamburger icon + generic avatar-circle grouped
+ * inside a bordered pill — clicking it still opens the same
+ * "View reservations" / "Log out" dropdown as before.
+ * Logged out, it shows a "Become a host" link alongside the login action.
  */
 export default function ProfileMenu() {
   const { user, isAuthenticated, restoring, signOut } = useAuth();
@@ -69,22 +71,25 @@ export default function ProfileMenu() {
 
   return (
     <div className="profile" ref={containerRef}>
+      <span className="profile__name">{user.username}</span>
+
       <button
         type="button"
         className="profile__trigger"
         onClick={() => setOpen((isOpen) => !isOpen)}
         aria-expanded={open}
         aria-haspopup="menu"
+        aria-label="Open account menu"
       >
-        <span className="profile__avatar" aria-hidden="true">
-          {user.username.charAt(0).toUpperCase()}
-        </span>
-        <span className="profile__greeting">
-          Hi, <strong>{user.username}</strong>
-        </span>
-        <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" className="profile__chevron">
-          <path d="M2 5l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true" className="profile__hamburger">
+          <path d="M3 6h18M3 12h18M3 18h18" strokeLinecap="round" />
         </svg>
+        <span className="profile__avatar" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" />
+          </svg>
+        </span>
       </button>
 
       {open && (

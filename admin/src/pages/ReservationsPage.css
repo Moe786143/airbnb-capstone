@@ -1,0 +1,36 @@
+.reservations-content { padding: 40px; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; }
+.reservations-content h2 { font-size: 28px; font-weight: 700; margin-bottom: 20px; }
+
+/* Measured from the Figma export (2x): outer frame border only, 1px #C8C8C8 —
+   no vertical dividers between columns, only horizontal row separators. */
+.reservations-table {
+  width: 100%; max-width: 1379px; border-collapse: collapse;
+  border: 1px solid #C8C8C8;
+}
+.reservations-table th,
+.reservations-table td {
+  height: 61px; border-bottom: 1px solid #C8C8C8;
+  text-align: left; vertical-align: middle; padding: 0 24px;
+}
+.reservations-table tbody tr:last-child td { border-bottom: none; }
+
+/* Header row has no fill in Figma — same white background as the body,
+   differentiated only by bold weight. */
+.reservations-table th { font-size: 18px; font-weight: 700; }
+.reservations-table td { font-size: 18px; font-weight: 400; }
+
+/* Actions column: the header label stays left-aligned like the others,
+   but the Delete button sits right-aligned, close to the table's edge. */
+.reservations-table td:last-child { text-align: right; padding-right: 8px; }
+
+.reservations-table__link { color: #222; text-decoration: none; font-weight: 400; }
+.reservations-muted { color: #999; font-style: italic; }
+
+/* Exact fill sampled from the export: #DE3151 (not the generic Airbnb
+   "rausch" red). Size and radius measured directly off the button. */
+.delete-btn {
+  background: #DE3151; color: white; border: none;
+  width: 144px; height: 44px;
+  border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: not-allowed;
+}
