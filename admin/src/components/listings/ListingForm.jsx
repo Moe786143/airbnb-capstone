@@ -1,46 +1,97 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Field from '../ui/Field';
 import Alert from '../ui/Alert';
-import RepeatableInput from './RepeatableInput';
 import { TYPES, emptyListing, isValid, toPayload, validateListing } from '../../utils/listing';
+import { LOCATIONS } from '../../data/locations';
+import './ListingForm.css';
 
 /**
- * The create/edit listing form.
+ * The create/edit listing form — two columns: listing name, location,
+ * description, guest-experience checkboxes and amenities on the left;
+ * price, type, capacity and photos on the right, with Create/Cancel below
+ * them. Matches the dashboard's actual Create Listing screen, not just a
+ * subset of it — price is the one field a host can leave blank (some
+ * listings intentionally show none, see Woodmead City Hotel).
  *
- * One component serves both pages: the create page passes no initial values
- * and the edit page passes the fetched listing, so the two screens can never
- * drift apart in fields or validation rules.
- *
- * Validation runs on submit and then live on every keystroke, so the form
- * does not nag while it is being filled in but does clear errors as soon as
- * they are fixed. Submission is delegated to the page via `onSubmit`.
+ * One component serves both pages: the create page passes no initial
+ * values and the edit page passes the fetched listing, so the two screens
+ * can never drift apart in fields or validation rules.
  *
  * @param {object} [initialValues] - form values, from `fromAccommodation()`
  * @param {Function} onSubmit - async (payload) => void; throws to report failure
- * @param {string} submitLabel - e.g. "Publish listing" / "Save changes"
- * @param {string} [busyLabel] - shown while submitting
+ * @param {string} heading - "Create Listing" / "Edit Listing"
+ * @param {string} [submitLabel='Create']
+ * @param {string} [busyLabel] - shown on the submit button while saving
  * @param {object} [serverError] - { message, details } from a failed request
  */
 export default function ListingForm({
   initialValues,
   onSubmit,
-  submitLabel,
+  heading,
+  submitLabel = 'Create',
   busyLabel = 'Saving…',
   serverError,
 }) {
   const [values, setValues] = useState(() => initialValues || emptyListing());
   const [errors, setErrors] = useState({});
-  // Errors stay hidden until the first submit attempt, so an untouched form
-  // is not covered in red before the host has typed anything.
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const [amenityDraft, setAmenityDraft] = useState('');
+  const fileInputRef = useRef(null);
 
   /** Update one field, re-validating once the form has been submitted. */
   const setValue = (field, value) => {
     const next = { ...values, [field]: value };
     setValues(next);
     if (submitted) setErrors(validateListing(next));
+  };
+
+  /** Add the drafted amenity to the list (case-insensitive de-duped), clear the input. */
+  const addAmenity = () => {
+    const value = amenityDraft.trim();
+    if (!value) return;
+    const exists = values.amenities.some((a) => a.toLowerCase() === value.toLowerCase());
+    if (!exists) setValue('amenities', [...values.amenities, value]);
+    setAmenityDraft('');
+  };
+
+  const removeAmenity = (index) => {
+    setValue('amenities', values.amenities.filter((_, i) => i !== index));
+  };
+
+  /** Enter in the amenity box adds it, same as clicking Add. */
+  const handleAmenityKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      addAmenity();
+    }
+  };
+
+  /**
+   * Read the chosen file(s) as data URLs and add them to `images`.
+   * There's no file-upload endpoint on the backend — accommodations just
+   * store an array of image URL strings — so a data URL is a real image
+   * the rest of the app can render with no server changes.
+   */
+  const handleFilesChosen = (event) => {
+    const files = Array.from(event.target.files || []);
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setValue('images', [...values.images, reader.result]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    // Let the same file be chosen again later (e.g. after removing it).
+    event.target.value = '';
+  };
+
+  const removeImage = (index) => {
+    setValue('images', values.images.filter((_, i) => i !== index));
   };
 
   /** Validate, then hand the payload to the page. */
@@ -52,9 +103,7 @@ export default function ListingForm({
     setSubmitted(true);
 
     if (!isValid(found)) {
-      // Move the host to the first problem rather than leaving them to hunt.
-      document.querySelector('.field--invalid, .repeatable--invalid, .input--invalid')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.querySelector('.field--invalid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
@@ -66,297 +115,269 @@ export default function ListingForm({
     }
   };
 
-  // Only surface messages after a submit attempt.
   const errorFor = (field) => (submitted ? errors[field] : undefined);
-  const itemErrorsFor = (field) => (submitted ? errors[field] || [] : []);
-  const problemCount = Object.keys(errors).length;
+
+  // Editing a listing whose location predates this dropdown (e.g. the
+  // seeded "Sandton, Johannesburg") would otherwise vanish from the select
+  // with no matching option — keep it selectable so saving doesn't
+  // silently blank it out.
+  const locationOptions =
+    values.location && !LOCATIONS.some((loc) => `${loc.name}, ${loc.region}` === values.location)
+      ? [...LOCATIONS, { name: values.location, region: '' }]
+      : LOCATIONS;
 
   return (
     <form className="listing-form" onSubmit={handleSubmit} noValidate>
-      {/* Whatever the server said about the last attempt */}
       {serverError && (
         <Alert tone="error" title="We couldn't save this listing" details={serverError.details}>
           {serverError.message}
         </Alert>
       )}
 
-      {/* Summary of local validation problems */}
-      {submitted && problemCount > 0 && (
-        <Alert tone="error" title="Check the highlighted fields">
-          {problemCount === 1
-            ? 'One field needs your attention before this can be saved.'
-            : `${problemCount} fields need your attention before this can be saved.`}
-        </Alert>
-      )}
+      <h1 className="listing-form__heading">{heading}</h1>
 
-      {/* --- The basics --------------------------------------------------- */}
-      <section className="form-section">
-        <h2 className="form-section__title">The basics</h2>
-
-        <Field id="title" label="Title" required error={errorFor('title')}
-          hint="What guests see first — keep it short and specific.">
-          {(props) => (
-            <input
-              {...props}
-              type="text"
-              className="input"
-              value={values.title}
-              maxLength={120}
-              placeholder="Sunlit Loft in the Marais"
-              onChange={(event) => setValue('title', event.target.value)}
-            />
-          )}
-        </Field>
-
-        <div className="form-grid form-grid--2">
-          <Field id="type" label="Property type" required error={errorFor('type')}>
-            {(props) => (
-              <select
-                {...props}
-                className="input"
-                value={values.type}
-                onChange={(event) => setValue('type', event.target.value)}
-              >
-                {TYPES.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            )}
-          </Field>
-
-          <Field id="location" label="Location" required error={errorFor('location')}
-            hint="City and country, e.g. Paris, France">
+      <div className="listing-form__grid">
+        {/* --- Left column: identity, description, extras --------------- */}
+        <div className="listing-form__col">
+          <Field id="title" label="Listing Title" required error={errorFor('title')}>
             {(props) => (
               <input
                 {...props}
                 type="text"
                 className="input"
+                value={values.title}
+                onChange={(event) => setValue('title', event.target.value)}
+              />
+            )}
+          </Field>
+
+          <Field id="location" label="Location" required error={errorFor('location')}>
+            {(props) => (
+              <select
+                {...props}
+                className="input"
                 value={values.location}
-                placeholder="Paris, France"
                 onChange={(event) => setValue('location', event.target.value)}
+              >
+                <option value="" disabled>
+                  Select a location
+                </option>
+                {locationOptions.map((loc) => {
+                  const display = loc.region ? `${loc.name}, ${loc.region}` : loc.name;
+                  return (
+                    <option key={display} value={display}>
+                      {display}
+                    </option>
+                  );
+                })}
+              </select>
+            )}
+          </Field>
+
+          <Field id="description" label="Description" error={errorFor('description')}>
+            {(props) => (
+              <textarea
+                {...props}
+                className="input input--textarea listing-form__textarea"
+                value={values.description}
+                onChange={(event) => setValue('description', event.target.value)}
               />
             )}
           </Field>
+
+          <div className="listing-form__checkboxes">
+            <label className="listing-form__checkbox">
+              <input
+                type="checkbox"
+                checked={values.enhancedCleaning}
+                onChange={(event) => setValue('enhancedCleaning', event.target.checked)}
+              />
+              Enhanced Cleaning
+            </label>
+
+            <label className="listing-form__checkbox">
+              <input
+                type="checkbox"
+                checked={values.selfCheckIn}
+                onChange={(event) => setValue('selfCheckIn', event.target.checked)}
+              />
+              Self Check-In
+            </label>
+          </div>
+
+          <div className="listing-form__amenities">
+            <div className="listing-form__amenities-row">
+              <Field id="amenity" label="Amenities">
+                {(props) => (
+                  <input
+                    {...props}
+                    type="text"
+                    className="input listing-form__input--amenity"
+                    value={amenityDraft}
+                    onChange={(event) => setAmenityDraft(event.target.value)}
+                    onKeyDown={handleAmenityKeyDown}
+                  />
+                )}
+              </Field>
+
+              <button
+                type="button"
+                className="listing-form__btn listing-form__btn--add"
+                onClick={addAmenity}
+              >
+                Add
+              </button>
+            </div>
+
+            {values.amenities.length > 0 && (
+              <ul className="listing-form__chips">
+                {values.amenities.map((amenity, index) => (
+                  <li className="listing-form__chip" key={`${amenity}-${index}`}>
+                    {amenity}
+                    <button
+                      type="button"
+                      onClick={() => removeAmenity(index)}
+                      aria-label={`Remove ${amenity}`}
+                    >
+                      &#10005;
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
 
-        <Field id="description" label="Description" error={errorFor('description')}
-          hint="Tell guests what makes this place worth staying in.">
-          {(props) => (
-            <textarea
-              {...props}
-              className="input input--textarea"
-              value={values.description}
-              rows={5}
-              maxLength={2000}
-              placeholder="A bright top-floor loft with exposed beams, five minutes from…"
-              onChange={(event) => setValue('description', event.target.value)}
+        {/* --- Right column: price, type, capacity, photos --------------- */}
+        <div className="listing-form__col">
+          <div className="listing-form__row-inline">
+            <Field id="price" label="Price" error={errorFor('price')}>
+              {(props) => (
+                <input
+                  {...props}
+                  type="number"
+                  min="0"
+                  step="1"
+                  className="input"
+                  value={values.price}
+                  onChange={(event) => setValue('price', event.target.value)}
+                />
+              )}
+            </Field>
+
+            <Field id="type" label="Type" error={errorFor('type')}>
+              {(props) => (
+                <select
+                  {...props}
+                  className="input"
+                  value={values.type}
+                  onChange={(event) => setValue('type', event.target.value)}
+                >
+                  <option value="" disabled>
+                    Select an option
+                  </option>
+                  {TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </Field>
+          </div>
+
+          <div className="listing-form__row-inline listing-form__row-inline--three">
+            <Field id="guests" label="Guests" error={errorFor('guests')}>
+              {(props) => (
+                <input
+                  {...props}
+                  type="number"
+                  min="1"
+                  step="1"
+                  className="input"
+                  value={values.guests}
+                  onChange={(event) => setValue('guests', event.target.value)}
+                />
+              )}
+            </Field>
+
+            <Field id="bedrooms" label="Bedrooms" error={errorFor('bedrooms')}>
+              {(props) => (
+                <input
+                  {...props}
+                  type="number"
+                  min="0"
+                  step="1"
+                  className="input"
+                  value={values.bedrooms}
+                  onChange={(event) => setValue('bedrooms', event.target.value)}
+                />
+              )}
+            </Field>
+
+            <Field id="bathrooms" label="Bathrooms" error={errorFor('bathrooms')}>
+              {(props) => (
+                <input
+                  {...props}
+                  type="number"
+                  min="0"
+                  step="1"
+                  className="input"
+                  value={values.bathrooms}
+                  onChange={(event) => setValue('bathrooms', event.target.value)}
+                />
+              )}
+            </Field>
+          </div>
+
+          <div className="listing-form__images">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              hidden
+              onChange={handleFilesChosen}
             />
-          )}
-        </Field>
-      </section>
+            <button
+              type="button"
+              className="listing-form__btn listing-form__btn--upload"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Upload Images
+            </button>
 
-      {/* --- Capacity ----------------------------------------------------- */}
-      <section className="form-section">
-        <h2 className="form-section__title">Space and capacity</h2>
+            <div className="listing-form__images-box">
+              {values.images.length === 0 ? (
+                <p className="listing-form__images-empty">No images uploaded</p>
+              ) : (
+                <ul className="listing-form__thumbs">
+                  {values.images.map((src, index) => (
+                    <li className="listing-form__thumb" key={index}>
+                      <img src={src} alt={`Listing photo ${index + 1}`} />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        aria-label={`Remove photo ${index + 1}`}
+                      >
+                        &#10005;
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
 
-        <div className="form-grid form-grid--3">
-          <Field id="guests" label="Guests" required error={errorFor('guests')}>
-            {(props) => (
-              <input
-                {...props}
-                type="number"
-                className="input"
-                min="1"
-                step="1"
-                value={values.guests}
-                onChange={(event) => setValue('guests', event.target.value)}
-              />
-            )}
-          </Field>
-
-          <Field id="bedrooms" label="Bedrooms" required error={errorFor('bedrooms')}>
-            {(props) => (
-              <input
-                {...props}
-                type="number"
-                className="input"
-                min="0"
-                step="1"
-                value={values.bedrooms}
-                onChange={(event) => setValue('bedrooms', event.target.value)}
-              />
-            )}
-          </Field>
-
-          <Field id="bathrooms" label="Bathrooms" required error={errorFor('bathrooms')}
-            hint="Halves allowed, e.g. 1.5">
-            {(props) => (
-              <input
-                {...props}
-                type="number"
-                className="input"
-                min="0"
-                step="0.5"
-                value={values.bathrooms}
-                onChange={(event) => setValue('bathrooms', event.target.value)}
-              />
-            )}
-          </Field>
+          <div className="listing-form__actions">
+            <button type="submit" className="listing-form__btn listing-form__btn--create" disabled={submitting}>
+              {submitting ? busyLabel : submitLabel}
+            </button>
+            <Link to="/" className="listing-form__btn listing-form__btn--cancel">
+              Cancel
+            </Link>
+          </div>
         </div>
-      </section>
-
-      {/* --- Pricing ------------------------------------------------------ */}
-      <section className="form-section">
-        <h2 className="form-section__title">Pricing</h2>
-
-        <div className="form-grid form-grid--2">
-          <Field id="price" label="Price per night (USD)" required error={errorFor('price')}>
-            {(props) => (
-              <input
-                {...props}
-                type="number"
-                className="input"
-                min="1"
-                step="1"
-                value={values.price}
-                placeholder="165"
-                onChange={(event) => setValue('price', event.target.value)}
-              />
-            )}
-          </Field>
-
-          <Field id="weeklyDiscount" label="Weekly discount (%)"
-            error={errorFor('weeklyDiscount')}
-            hint="Applied automatically to stays of 7 nights or more.">
-            {(props) => (
-              <input
-                {...props}
-                type="number"
-                className="input"
-                min="0"
-                max="100"
-                step="1"
-                value={values.weeklyDiscount}
-                onChange={(event) => setValue('weeklyDiscount', event.target.value)}
-              />
-            )}
-          </Field>
-        </div>
-
-        <div className="form-grid form-grid--3">
-          <Field id="cleaningFee" label="Cleaning fee (USD)" error={errorFor('cleaningFee')}>
-            {(props) => (
-              <input
-                {...props}
-                type="number"
-                className="input"
-                min="0"
-                step="1"
-                value={values.cleaningFee}
-                onChange={(event) => setValue('cleaningFee', event.target.value)}
-              />
-            )}
-          </Field>
-
-          <Field id="serviceFee" label="Service fee (USD)" error={errorFor('serviceFee')}>
-            {(props) => (
-              <input
-                {...props}
-                type="number"
-                className="input"
-                min="0"
-                step="1"
-                value={values.serviceFee}
-                onChange={(event) => setValue('serviceFee', event.target.value)}
-              />
-            )}
-          </Field>
-
-          <Field id="occupancyTaxes" label="Occupancy taxes (USD)"
-            error={errorFor('occupancyTaxes')}>
-            {(props) => (
-              <input
-                {...props}
-                type="number"
-                className="input"
-                min="0"
-                step="1"
-                value={values.occupancyTaxes}
-                onChange={(event) => setValue('occupancyTaxes', event.target.value)}
-              />
-            )}
-          </Field>
-        </div>
-      </section>
-
-      {/* --- Photos and amenities ----------------------------------------- */}
-      <section className="form-section">
-        <h2 className="form-section__title">Photos and amenities</h2>
-
-        <RepeatableInput
-          idPrefix="image"
-          legend="Image URLs"
-          hint="The first image is used as the listing's main photo."
-          values={values.images}
-          onChange={(images) => setValue('images', images)}
-          error={errorFor('images')}
-          itemErrors={itemErrorsFor('imageItems')}
-          placeholder="https://images.unsplash.com/photo-…"
-          addLabel="Add another image"
-        />
-
-        <RepeatableInput
-          idPrefix="amenity"
-          legend="Amenities"
-          hint="One per row, e.g. Wifi, Kitchen, Free parking."
-          values={values.amenities}
-          onChange={(amenities) => setValue('amenities', amenities)}
-          itemErrors={itemErrorsFor('amenityItems')}
-          placeholder="Wifi"
-          addLabel="Add another amenity"
-        />
-      </section>
-
-      {/* --- Guest experience --------------------------------------------- */}
-      <section className="form-section">
-        <h2 className="form-section__title">Guest experience</h2>
-
-        <label className="checkbox">
-          <input
-            type="checkbox"
-            checked={values.selfCheckIn}
-            onChange={(event) => setValue('selfCheckIn', event.target.checked)}
-          />
-          <span>
-            <strong>Self check-in</strong>
-            <span className="checkbox__hint">Guests can let themselves in with a keypad.</span>
-          </span>
-        </label>
-
-        <label className="checkbox">
-          <input
-            type="checkbox"
-            checked={values.enhancedCleaning}
-            onChange={(event) => setValue('enhancedCleaning', event.target.checked)}
-          />
-          <span>
-            <strong>Enhanced cleaning</strong>
-            <span className="checkbox__hint">
-              You follow Airbnb&apos;s 5-step enhanced cleaning process.
-            </span>
-          </span>
-        </label>
-      </section>
-
-      <div className="form-actions">
-        <Link to="/" className="btn btn--ghost">
-          Cancel
-        </Link>
-        <button type="submit" className="btn btn--primary" disabled={submitting}>
-          {submitting ? busyLabel : submitLabel}
-        </button>
       </div>
     </form>
   );

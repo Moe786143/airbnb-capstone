@@ -4,6 +4,13 @@
  *
  * Kept out of the component so the create and edit pages share one set of
  * rules, and so the rules can be reasoned about on their own.
+ *
+ * The field set here — title, location, description, enhanced
+ * cleaning/self check-in, amenities, price, type, guests, bedrooms,
+ * bathrooms, images — matches the dashboard's actual Create Listing
+ * screen. `toPayload` omits price when it's left blank, and because the
+ * API's PUT only sets the keys it's given, editing a listing through this
+ * form never clears fields it doesn't collect (rating, reviews…).
  */
 
 /** The property types offered in the form's dropdown. */
@@ -20,82 +27,75 @@ export const TYPES = [
   'Shared room',
 ];
 
-/**
- * A blank form. Numeric fields are strings because that is what an
- * `<input>` gives back; they are cast on submit.
- */
+/** A blank form. Numeric fields are strings — that's what an <input> gives back. */
 export const emptyListing = () => ({
   title: '',
-  type: TYPES[0],
+  type: '',
   location: '',
   description: '',
   price: '',
   guests: '1',
-  bedrooms: '1',
-  bathrooms: '1',
-  weeklyDiscount: '0',
-  cleaningFee: '0',
-  serviceFee: '0',
-  occupancyTaxes: '0',
+  bedrooms: '0',
+  bathrooms: '0',
   enhancedCleaning: false,
   selfCheckIn: false,
-  // Start with one empty row each so the form shows an input to type into.
-  images: [''],
-  amenities: [''],
+  images: [],
+  amenities: [],
 });
 
 /**
  * Convert an accommodation document from the API into form values.
- * Used to pre-fill the edit form.
+ * Used to pre-fill the edit form. Only the fields this form collects are
+ * carried over — everything else on the document is left as-is until it's
+ * saved again (see the module comment above).
  *
  * @param {object} doc - an accommodation from GET /api/accommodations/:id
  */
 export const fromAccommodation = (doc) => ({
   title: doc.title ?? '',
-  type: doc.type ?? TYPES[0],
+  type: doc.type ?? '',
   location: doc.location ?? '',
   description: doc.description ?? '',
-  price: String(doc.price ?? ''),
+  price: doc.price != null ? String(doc.price) : '',
   guests: String(doc.guests ?? '1'),
   bedrooms: String(doc.bedrooms ?? '0'),
   bathrooms: String(doc.bathrooms ?? '0'),
-  weeklyDiscount: String(doc.weeklyDiscount ?? '0'),
-  cleaningFee: String(doc.cleaningFee ?? '0'),
-  serviceFee: String(doc.serviceFee ?? '0'),
-  occupancyTaxes: String(doc.occupancyTaxes ?? '0'),
   enhancedCleaning: Boolean(doc.enhancedCleaning),
   selfCheckIn: Boolean(doc.selfCheckIn),
-  // Keep one empty row when the listing has none, so there is something to
-  // type into rather than an empty area with only an "Add" button.
-  images: doc.images?.length ? [...doc.images] : [''],
-  amenities: doc.amenities?.length ? [...doc.amenities] : [''],
+  images: doc.images?.length ? [...doc.images] : [],
+  amenities: doc.amenities?.length ? [...doc.amenities] : [],
 });
 
 /**
  * Convert form values into the JSON body the API expects: numbers cast from
- * strings, text trimmed, and blank rows dropped from the arrays.
+ * strings, text trimmed, blank amenity/image rows dropped, and price left
+ * out entirely when the host didn't type one (some listings intentionally
+ * show no nightly price — see Woodmead City Hotel).
  *
  * @param {object} values - current form state
  * @returns {object} the request body for POST/PUT /api/accommodations
  */
-export const toPayload = (values) => ({
-  title: values.title.trim(),
-  type: values.type.trim(),
-  location: values.location.trim(),
-  description: values.description.trim(),
-  price: Number(values.price),
-  guests: Number(values.guests),
-  bedrooms: Number(values.bedrooms),
-  bathrooms: Number(values.bathrooms),
-  weeklyDiscount: Number(values.weeklyDiscount || 0),
-  cleaningFee: Number(values.cleaningFee || 0),
-  serviceFee: Number(values.serviceFee || 0),
-  occupancyTaxes: Number(values.occupancyTaxes || 0),
-  enhancedCleaning: Boolean(values.enhancedCleaning),
-  selfCheckIn: Boolean(values.selfCheckIn),
-  images: values.images.map((image) => image.trim()).filter(Boolean),
-  amenities: values.amenities.map((amenity) => amenity.trim()).filter(Boolean),
-});
+export const toPayload = (values) => {
+  const payload = {
+    title: values.title.trim(),
+    type: values.type.trim(),
+    location: values.location.trim(),
+    description: values.description.trim(),
+    guests: Number(values.guests),
+    bedrooms: Number(values.bedrooms),
+    bathrooms: Number(values.bathrooms),
+    enhancedCleaning: Boolean(values.enhancedCleaning),
+    selfCheckIn: Boolean(values.selfCheckIn),
+    images: values.images.map((image) => image.trim()).filter(Boolean),
+    amenities: values.amenities.map((amenity) => amenity.trim()).filter(Boolean),
+  };
+
+  if (values.price.trim() !== '') {
+    payload.price = Number(values.price);
+  }
+
+  return payload;
+};
 
 /**
  * Check a numeric field.
@@ -106,10 +106,9 @@ export const toPayload = (values) => ({
  * @param {boolean} [rules.required]
  * @param {number} [rules.min]
  * @param {number} [rules.max]
- * @param {boolean} [rules.integer]
  * @returns {string|null} an error message, or null when valid
  */
-const validateNumber = (raw, { label, required = false, min, max, integer = false }) => {
+const validateNumber = (raw, { label, required = false, min, max }) => {
   const value = String(raw ?? '').trim();
 
   if (value === '') {
@@ -120,10 +119,6 @@ const validateNumber = (raw, { label, required = false, min, max, integer = fals
   }
 
   const parsed = Number(value);
-
-  if (integer && !Number.isInteger(parsed)) {
-    return `${label} must be a whole number`;
-  }
   if (min !== undefined && parsed < min) {
     return `${label} must be at least ${min}`;
   }
@@ -133,22 +128,8 @@ const validateNumber = (raw, { label, required = false, min, max, integer = fals
   return null;
 };
 
-/** True when a string looks like an http(s) URL. */
-const looksLikeUrl = (value) => {
-  try {
-    const url = new URL(value);
-    return url.protocol === 'http:' || url.protocol === 'https:';
-  } catch {
-    return false;
-  }
-};
-
 /**
  * Validate the whole form.
- *
- * Returns a map of field name to message. Repeatable fields also get an
- * index-aligned array (`imageItems`, `amenityItems`) so each row can show
- * its own error underneath it.
  *
  * @param {object} values - current form state
  * @returns {object} errors — empty when the form is valid
@@ -156,41 +137,29 @@ const looksLikeUrl = (value) => {
 export const validateListing = (values) => {
   const errors = {};
 
-  /* --- Text fields ------------------------------------------------------ */
   const title = values.title.trim();
   if (!title) {
-    errors.title = 'Title is required';
-  } else if (title.length < 5) {
-    errors.title = 'Title must be at least 5 characters';
-  } else if (title.length > 100) {
-    errors.title = 'Title cannot be longer than 100 characters';
+    errors.title = 'Listing name is required';
+  } else if (title.length > 120) {
+    errors.title = 'Listing name cannot be longer than 120 characters';
   }
 
   if (!values.type.trim()) {
-    errors.type = 'Choose a property type';
+    errors.type = 'Choose a type';
   }
 
-  const location = values.location.trim();
-  if (!location) {
-    errors.location = 'Location is required';
-  } else if (location.length < 3) {
-    errors.location = 'Location must be at least 3 characters';
+  if (!values.location.trim()) {
+    errors.location = 'Choose a location';
   }
 
   if (values.description.trim().length > 2000) {
     errors.description = 'Description cannot be longer than 2000 characters';
   }
 
-  /* --- Numbers ---------------------------------------------------------- */
   const numberChecks = {
-    price: { label: 'Price per night', required: true, min: 1, max: 100000 },
-    guests: { label: 'Guests', required: true, min: 1, max: 50, integer: true },
-    bedrooms: { label: 'Bedrooms', required: true, min: 0, max: 50, integer: true },
+    guests: { label: 'Guests', required: true, min: 1, max: 50 },
+    bedrooms: { label: 'Bedrooms', required: true, min: 0, max: 50 },
     bathrooms: { label: 'Bathrooms', required: true, min: 0, max: 50 },
-    weeklyDiscount: { label: 'Weekly discount', min: 0, max: 100 },
-    cleaningFee: { label: 'Cleaning fee', min: 0, max: 100000 },
-    serviceFee: { label: 'Service fee', min: 0, max: 100000 },
-    occupancyTaxes: { label: 'Occupancy taxes', min: 0, max: 100000 },
   };
 
   Object.entries(numberChecks).forEach(([field, rules]) => {
@@ -198,57 +167,15 @@ export const validateListing = (values) => {
     if (message) errors[field] = message;
   });
 
-  /* --- Images ----------------------------------------------------------- */
-  const imageItems = [];
-  const filledImages = values.images.filter((image) => image.trim());
-
-  values.images.forEach((image, index) => {
-    const value = image.trim();
-    // A single blank row is fine — it is just an empty input waiting to be
-    // filled. Only flag blanks when other rows have content.
-    if (!value) {
-      imageItems[index] = filledImages.length > 0 ? 'Remove this empty row or add a URL' : null;
-      return;
-    }
-    imageItems[index] = looksLikeUrl(value)
-      ? null
-      : 'Enter a full URL starting with http:// or https://';
-  });
-
-  if (filledImages.length === 0) {
-    errors.images = 'Add at least one image URL';
-  }
-  if (imageItems.some(Boolean)) {
-    errors.imageItems = imageItems;
-  }
-
-  /* --- Amenities -------------------------------------------------------- */
-  const amenityItems = [];
-  const filledAmenities = values.amenities.map((a) => a.trim()).filter(Boolean);
-  const seen = new Set();
-
-  values.amenities.forEach((amenity, index) => {
-    const value = amenity.trim();
-    if (!value) {
-      amenityItems[index] =
-        filledAmenities.length > 0 ? 'Remove this empty row or name an amenity' : null;
-      return;
-    }
-    const key = value.toLowerCase();
-    amenityItems[index] = seen.has(key) ? 'This amenity is already listed' : null;
-    seen.add(key);
-  });
-
-  if (amenityItems.some(Boolean)) {
-    errors.amenityItems = amenityItems;
-  }
+  // Price is optional — see toPayload — but if a host does type one in, it
+  // has to be a sane number.
+  const priceMessage = validateNumber(values.price, { label: 'Price', min: 0, max: 100000 });
+  if (priceMessage) errors.price = priceMessage;
 
   return errors;
 };
 
 /**
  * True when a validation result contains no problems.
- * `imageItems`/`amenityItems` are sparse arrays, so a plain key count is
- * enough — they are only ever set when they hold at least one message.
  */
 export const isValid = (errors) => Object.keys(errors).length === 0;

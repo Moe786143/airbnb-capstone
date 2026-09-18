@@ -1,0 +1,329 @@
+/* ==========================================================================
+   The Create/Edit Listing form — two columns (identity/description/extras
+   on the left, price/type/capacity/photos on the right), matching the
+   dashboard's actual Create Listing screen.
+
+   Field sizing (55px height, 7px radius, 2px #3D3D3D border) and the
+   button colors/sizes (blue #4153F5, red #DE3151) carry over from Figma
+   dev-mode measurements taken for this page's controls; the two-column
+   layout, checkboxes and price/guests fields below match the dashboard's
+   actual screen rather than the narrower single-column Figma frame.
+   ========================================================================== */
+
+.listing-form {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 40px;
+  font-family: Inter, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.listing-form__heading {
+  margin: 0 0 48px;
+  font-family: Inter, sans-serif;
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 40px;
+  letter-spacing: 0;
+  color: #000000;
+  text-align: center;
+}
+
+/* Shared label look for every field in this form (Figma's brand-blue labels). */
+.listing-form .field__label,
+.listing-form__label {
+  font-family: Inter, sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #4153F5;
+  margin-bottom: 8px;
+}
+
+.listing-form .field {
+  margin-bottom: 24px;
+}
+
+.listing-form .field__error {
+  margin-top: 6px;
+}
+
+/* ---- two-column layout ---------------------------------------------------- */
+
+.listing-form__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  width: 1000px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.listing-form__col {
+  min-width: 0;
+}
+
+.listing-form__row-inline {
+  display: flex;
+  gap: 20px;
+}
+
+.listing-form__row-inline .field {
+  flex: 1;
+  min-width: 0;
+}
+
+.listing-form__row-inline--three {
+  gap: 12px;
+}
+
+/* ---- inputs, sized to the measured boxes --------------------------------- */
+
+.listing-form .input {
+  width: 100%;
+  height: 55px;
+  border-radius: 7px;
+  border: 2px solid #3D3D3D;
+  padding: 0 16px;
+  font-family: Inter, sans-serif;
+  font-size: 15px;
+  color: #111827;
+  background: #FFFFFF;
+}
+
+.listing-form .listing-form__textarea {
+  width: 100%;
+  height: 118px;
+  padding: 12px 16px;
+  resize: vertical;
+  font-family: Inter, sans-serif;
+  font-size: 15px;
+}
+
+/* ---- Guest-experience checkboxes ------------------------------------------ */
+
+.listing-form__checkboxes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 0 24px;
+}
+
+.listing-form__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: Inter, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #111827;
+  cursor: pointer;
+}
+
+.listing-form__checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #4153F5;
+  cursor: pointer;
+}
+
+/* ---- Amenities ------------------------------------------------------------ */
+
+.listing-form__amenities-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.listing-form__amenities-row .field {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.listing-form__input--amenity {
+  width: 100% !important;
+}
+
+.listing-form__chips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.listing-form__chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #F3F4F6;
+  color: #374151;
+  border-radius: 999px;
+  padding: 4px 8px 4px 12px;
+  font-size: 13px;
+}
+
+.listing-form__chip button {
+  border: none;
+  background: transparent;
+  color: #6B7280;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  padding: 2px;
+}
+
+.listing-form__chip button:hover {
+  color: #DE3151;
+}
+
+/* ---- Images ---------------------------------------------------------------- */
+
+.listing-form__images {
+  margin: 8px 0 24px;
+}
+
+.listing-form__btn--upload {
+  margin-bottom: 16px;
+}
+
+.listing-form__images-box {
+  width: 100%;
+  min-height: 140px;
+  border-radius: 7px;
+  border: 1px solid #000000;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.listing-form__images-empty {
+  margin: 0;
+  color: #9CA3AF;
+  font-size: 14px;
+}
+
+.listing-form__thumbs {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.listing-form__thumb {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.listing-form__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.listing-form__thumb button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---- buttons (Add / Upload Images / Create / Cancel) ------------------------ */
+
+.listing-form__btn {
+  border: none;
+  border-radius: 7px;
+  color: #FFFFFF;
+  font-family: Inter, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter 0.15s ease;
+}
+
+.listing-form__btn:hover {
+  filter: brightness(0.94);
+}
+
+.listing-form__btn--add {
+  width: 85px;
+  height: 55px;
+  background: #4153F5;
+  flex-shrink: 0;
+}
+
+.listing-form__btn--upload {
+  padding: 0 24px;
+  height: 48px;
+  background: #4153F5;
+  align-self: flex-start;
+}
+
+.listing-form__actions {
+  display: flex;
+  gap: 30px;
+  margin-top: 8px;
+}
+
+.listing-form__btn--create,
+.listing-form__btn--cancel {
+  flex: 1;
+  height: 55px;
+}
+
+.listing-form__btn--create {
+  background: #4153F5;
+}
+
+.listing-form__btn--cancel {
+  background: #DE3151;
+}
+
+@media (max-width: 900px) {
+  .listing-form {
+    padding: 24px 16px;
+  }
+
+  .listing-form__grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .listing-form__row-inline {
+    flex-wrap: wrap;
+  }
+
+  .listing-form__input--amenity {
+    width: 100% !important;
+    flex: 1;
+  }
+
+  .listing-form__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+}

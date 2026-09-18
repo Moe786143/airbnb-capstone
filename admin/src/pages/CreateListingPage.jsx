@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ListingForm from '../components/listings/ListingForm';
 import { createAccommodation } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 /**
- * The create listing page at `/listings/new`.
+ * The create listing page at `/listings/new` — matches the Figma
+ * "Create Listing" frame exactly (see ListingForm/ListingForm.css).
  *
  * Renders the shared form empty and posts the result to
  * POST /api/accommodations. On success it redirects to the listings page
@@ -45,25 +46,12 @@ export default function CreateListingPage() {
   };
 
   return (
-    <div className="page page--narrow">
-      <header className="page__header">
-        <div>
-          <p className="page__breadcrumb">
-            <Link to="/">Listings</Link> / New
-          </p>
-          <h1 className="page__title">Create a listing</h1>
-          <p className="page__subtitle">
-            Fill in the details below. Fields marked * are required.
-          </p>
-        </div>
-      </header>
-
-      <ListingForm
-        onSubmit={handleSubmit}
-        submitLabel="Publish listing"
-        busyLabel="Publishing…"
-        serverError={serverError}
-      />
-    </div>
+    <ListingForm
+      heading="Create Listing"
+      onSubmit={handleSubmit}
+      submitLabel="Create"
+      busyLabel="Creating…"
+      serverError={serverError}
+    />
   );
 }

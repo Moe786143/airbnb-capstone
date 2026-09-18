@@ -12,9 +12,16 @@ import { fromAccommodation } from '../utils/listing';
 /**
  * The edit listing page at `/listings/:id/edit`.
  *
- * Fetches the listing, pre-fills the shared form with it, and sends changes
- * to PUT /api/accommodations/:id. On success it returns to the listings
- * page, which re-fetches on mount — so the change is visible immediately.
+ * Reuses the same Figma-matched form as the create page (see
+ * ListingForm/ListingForm.css) — no separate Figma reference for this page
+ * exists yet, so the heading/button wording here ("Edit Listing" /
+ * "Update") is a placeholder to match, not a confirmed design value.
+ *
+ * Fetches the listing, pre-fills the form with the fields it collects, and
+ * sends changes to PUT /api/accommodations/:id. Because that endpoint only
+ * sets the keys it's given, fields this form doesn't show — price, guests,
+ * rating, subtitle… — are left exactly as they were. On success it returns
+ * to the listings page, which re-fetches on mount.
  *
  * Guards against editing someone else's listing: the backend would return
  * 403 anyway, but catching it here means a clear message instead of a
@@ -87,25 +94,13 @@ export default function EditListingPage() {
   }
 
   return (
-    <div className="page page--narrow">
-      <header className="page__header">
-        <div>
-          <p className="page__breadcrumb">
-            <Link to="/">Listings</Link> / Edit
-          </p>
-          <h1 className="page__title">Edit listing</h1>
-          <p className="page__subtitle">{listing.title}</p>
-        </div>
-      </header>
-
-      <ListingForm
-        // Pre-filled from the fetched document.
-        initialValues={fromAccommodation(listing)}
-        onSubmit={handleSubmit}
-        submitLabel="Save changes"
-        busyLabel="Saving…"
-        serverError={serverError}
-      />
-    </div>
+    <ListingForm
+      heading="Edit Listing"
+      initialValues={fromAccommodation(listing)}
+      onSubmit={handleSubmit}
+      submitLabel="Update"
+      busyLabel="Saving…"
+      serverError={serverError}
+    />
   );
 }

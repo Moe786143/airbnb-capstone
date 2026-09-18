@@ -12,7 +12,10 @@ const Accommodation = require('../models/Accommodation');
  */
 const validateAccommodationBody = (body, isUpdate = false) => {
   const errors = [];
-  const required = ['title', 'type', 'location', 'price', 'guests', 'bedrooms', 'bathrooms'];
+  // Matches what the admin's Create Listing form actually collects (see
+  // admin/src/utils/listing.js) — price stays optional; some listings
+  // intentionally show none (see Woodmead City Hotel).
+  const required = ['title', 'type', 'location', 'guests', 'bedrooms', 'bathrooms'];
 
   if (!isUpdate) {
     required.forEach((field) => {

@@ -40,7 +40,7 @@ const accommodationSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
-    guests: { type: Number, required: true, min: 1 },
+    guests: { type: Number, min: 1 },
     // Free-text override for the guests figure shown on cards, e.g. "4-6
     // guests" — the numeric `guests` field above stays a plain number
     // (used for validation/filtering) while this carries the exact display

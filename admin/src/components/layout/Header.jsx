@@ -16,6 +16,11 @@ export default function Header() {
   const { isAuthenticated } = useAuth();
   const { pathname } = useLocation();
   const isLoginPage = pathname === '/login';
+  // The Create/Edit Listing frames show a single "View my listings" link in
+  // place of the usual three-pill nav — you're already mid-form, so the
+  // other two destinations (Reservations, Create Listing itself) don't apply.
+  const isListingFormPage =
+    pathname === '/listings/new' || /^\/listings\/[^/]+\/edit$/.test(pathname);
 
   return (
     <header className="header">
@@ -26,15 +31,23 @@ export default function Header() {
 
       {isAuthenticated && (
         <nav className="header__nav" aria-label="Dashboard">
-          <NavLink to="/reservations" className="header__link">
-            View Reservations
-          </NavLink>
-          <NavLink to="/" end className="header__link">
-            View Listings
-          </NavLink>
-          <NavLink to="/listings/new" className="header__link">
-            Create Listing
-          </NavLink>
+          {isListingFormPage ? (
+            <NavLink to="/" end className="header__link">
+              View my listings
+            </NavLink>
+          ) : (
+            <>
+              <NavLink to="/reservations" className="header__link">
+                View Reservations
+              </NavLink>
+              <NavLink to="/" end className="header__link">
+                View Listings
+              </NavLink>
+              <NavLink to="/listings/new" className="header__link">
+                Create Listing
+              </NavLink>
+            </>
+          )}
         </nav>
       )}
     </header>
