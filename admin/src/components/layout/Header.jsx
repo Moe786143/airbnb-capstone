@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import Logo from './Logo';
 import ProfileMenu from './ProfileMenu';
 import { useAuth } from '../../context/AuthContext';
@@ -9,15 +9,19 @@ import { useAuth } from '../../context/AuthContext';
  * Matches the Figma export's two-row layout: logo + account control on
  * top, then a separate row of outlined nav pills below — none of them
  * shown as "active" in the export, so all three share one plain style.
+ * On /login specifically, the export shows just the bare logo — no
+ * account control, since you're already on the sign-in screen.
  */
 export default function Header() {
   const { isAuthenticated } = useAuth();
+  const { pathname } = useLocation();
+  const isLoginPage = pathname === '/login';
 
   return (
     <header className="header">
       <div className="header__top">
         <Logo />
-        <ProfileMenu />
+        {!isLoginPage && <ProfileMenu />}
       </div>
 
       {isAuthenticated && (

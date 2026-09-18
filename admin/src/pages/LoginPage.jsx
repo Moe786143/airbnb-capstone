@@ -3,9 +3,15 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Alert from '../components/ui/Alert';
 import Field from '../components/ui/Field';
 import { useAuth } from '../context/AuthContext';
+import './LoginPage.css';
 
 /**
  * The login page at `/login`.
+ *
+ * Matches the Figma export: bare "Login" heading, Username/Password
+ * fields, a "Forgot Password ?" link, and a solid submit button — no
+ * card border, no "Host dashboard" title/subtitle, no demo-account hint,
+ * since none of those appear in the design.
  *
  * Validates locally first (empty fields), then posts to
  * POST /api/users/login through the auth context. Three failure modes get
@@ -79,12 +85,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login">
-      <div className="login__card">
-        <h1 className="login__title">Host dashboard</h1>
-        <p className="login__subtitle">
-          Sign in to manage your listings and see your bookings.
-        </p>
+    <div className="login-page">
+      <div className="login-page__form">
+        <h1 className="login-page__heading">Login</h1>
 
         {formError && (
           <Alert tone="error" title={formError.title}>
@@ -93,7 +96,7 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} noValidate>
-          <Field id="username" label="Username" required error={fieldErrors.username}>
+          <Field id="username" label="Username" error={fieldErrors.username}>
             {(props) => (
               <input
                 {...props}
@@ -114,7 +117,7 @@ export default function LoginPage() {
             )}
           </Field>
 
-          <Field id="password" label="Password" required error={fieldErrors.password}>
+          <Field id="password" label="Password" error={fieldErrors.password}>
             {(props) => (
               <input
                 {...props}
@@ -133,22 +136,24 @@ export default function LoginPage() {
             )}
           </Field>
 
-          <button type="submit" className="btn btn--primary btn--block" disabled={submitting}>
-            {submitting ? 'Signing in…' : 'Sign in'}
+          <p className="login-page__forgot">
+            <a href="#">Forgot Password ?</a>
+          </p>
+
+          <button type="submit" className="login-page__submit" disabled={submitting}>
+            {submitting ? 'Signing in…' : 'Login'}
           </button>
         </form>
 
-        {/* The seeded host account, so the dashboard can be tried straight away */}
-        <div className="login__hint">
-          <p className="login__hint-title">Demo host account</p>
-          <p>
-            <strong>sarahhost</strong> / password123
-          </p>
-          <p className="login__hint-note">
-            Guest accounts such as <strong>jamesguest</strong> cannot access this
-            dashboard — they belong on the customer site.
-          </p>
-        </div>
+        {/* The seeded host account, so the dashboard can be tried straight away.
+            Not part of the Figma design, kept as a screen-reader-only note so
+            it doesn't affect the visual match but the demo credentials are
+            still discoverable. */}
+        <p className="login-page__demo-note">
+          Demo host account: sarahhost / password123. Guest accounts such as
+          jamesguest cannot access this dashboard — they belong on the
+          customer site.
+        </p>
       </div>
     </div>
   );
