@@ -7,10 +7,11 @@ import Spinner from '../components/ui/Spinner';
 import ErrorState from '../components/ui/ErrorState';
 import { deleteAccommodation, getAccommodations } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { formatCurrency } from '../utils/format';
+import './ListingsPage.css';
+
 
 /**
- * The dashboard home at `/` — every listing this host owns.
+ * The dashboard home at `/` — "My Hotel List", every listing this host owns.
  *
  * The API has no "only mine" filter, so this fetches a full page of
  * accommodations and narrows to the ones whose `host_id` matches the
@@ -105,28 +106,10 @@ export default function ListingsPage() {
     }
   };
 
-  /** Total nightly value of the portfolio, shown in the header summary. */
-  const totalNightly = listings.reduce((sum, listing) => sum + (listing.price || 0), 0);
-
   return (
-    <div className="page">
-      <header className="page__header">
-        <div>
-          <h1 className="page__title">Your listings</h1>
-          <p className="page__subtitle">
-            {loading
-              ? 'Loading your properties…'
-              : `${listings.length} propert${listings.length === 1 ? 'y' : 'ies'}` +
-                (listings.length > 0
-                  ? ` · ${formatCurrency(totalNightly)} total per night`
-                  : '')}
-          </p>
-        </div>
-
-        <Link to="/listings/new" className="btn btn--primary">
-          + Create listing
-        </Link>
-      </header>
+    <div className="listings-content">
+      <h2 className="listings-content__heading">My Hotel List</h2>
+      <div className="listings-content__divider" />
 
       {/* Feedback from a create, update or delete */}
       {flash && (
@@ -159,14 +142,27 @@ export default function ListingsPage() {
       )}
 
       {!loading && !error && listings.length > 0 && (
-        <div className="listing-grid">
+        <div className="listing-rows">
           {listings.map((listing) => (
-            <ListingCard
-              key={listing._id}
-              listing={listing}
-              deleting={deletingId === listing._id}
-              onDelete={setPendingDelete}
-            />
+            <div className="listing-rows__item" key={listing._id}>
+              <ListingCard listing={listing} />
+
+              <Link
+                to={`/listings/${listing._id}/edit`}
+                className="listing-row__btn listing-row__btn--update"
+              >
+                Update
+              </Link>
+
+              <button
+                type="button"
+                className="listing-row__btn listing-row__btn--delete"
+                onClick={() => setPendingDelete(listing)}
+                disabled={deletingId === listing._id}
+              >
+                {deletingId === listing._id ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
           ))}
         </div>
       )}

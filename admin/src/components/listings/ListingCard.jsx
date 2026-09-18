@@ -1,55 +1,69 @@
-import { Link } from 'react-router-dom';
 import SafeImage from '../ui/SafeImage';
-import { formatCurrency } from '../../utils/format';
 
 /**
- * One of the host's listings in the dashboard grid.
+ * One row in "My Hotel List" — the photo plus the text block beside it
+ * (subtitle, title, guest/bed/bath line, amenities, rating and price).
  *
- * Shows the main photo, title, location and nightly price, with Update and
- * Delete actions. Deleting is handed up to the page, which owns the
- * confirmation dialog and the request.
+ * Matches the Figma "Listing" component exactly, including its wording
+ * ("beds"/"bath" rather than "bedrooms"/"bathrooms", a guest *range* like
+ * "4-6 guests" rather than a single count, and — for a listing with no
+ * price set — no "/night" line at all). The Update/Delete buttons and the
+ * divider below each row are siblings of this component, not part of it
+ * (see ListingsPage), matching the Figma layer structure.
  *
  * @param {object} listing - an accommodation document
- * @param {Function} onDelete - called with the listing when Delete is clicked
- * @param {boolean} [deleting=false] - true while this listing is being removed
  */
-export default function ListingCard({ listing, onDelete, deleting = false }) {
-  const { _id, images, title, location, price, type, guests, bedrooms, bathrooms } = listing;
+export default function ListingCard({ listing }) {
+  const {
+    images,
+    title,
+    subtitle,
+    type,
+    guestsLabel,
+    guests,
+    bedrooms,
+    bathrooms,
+    amenities,
+    rating,
+    reviews,
+    price,
+  } = listing;
 
   return (
-    <article className={`listing-card${deleting ? ' listing-card--busy' : ''}`}>
-      <div className="listing-card__media">
-        <SafeImage src={images?.[0]} alt={title} className="listing-card__image" />
-      </div>
+    <div className="listing-row">
+      <SafeImage src={images?.[0]} alt={title} className="listing-row__image" />
 
-      <div className="listing-card__body">
-        <p className="listing-card__type">{type}</p>
-        <h2 className="listing-card__title">{title}</h2>
-        <p className="listing-card__location">{location}</p>
+      <div className="listing-row__content">
+        <div className="listing-row__heading">
+          <p className="listing-row__subtitle">{subtitle || type}</p>
+          <h3 className="listing-row__title">{title}</h3>
+        </div>
 
-        <p className="listing-card__meta">
-          {guests} guests &middot; {bedrooms} bedroom{bedrooms === 1 ? '' : 's'} &middot;{' '}
-          {bathrooms} bathroom{bathrooms === 1 ? '' : 's'}
-        </p>
+        <div className="listing-row__hr" />
 
-        <p className="listing-card__price">
-          <strong>{formatCurrency(price)}</strong> <span>per night</span>
-        </p>
+        <div className="listing-row__details">
+          <p className="listing-row__meta">
+            {guestsLabel || `${guests} guests`} &middot; {type} &middot; {bedrooms} beds &middot;{' '}
+            {bathrooms} bath
+          </p>
+          {amenities?.length > 0 && (
+            <p className="listing-row__amenities">{amenities.join(' · ')}</p>
+          )}
+        </div>
 
-        <div className="listing-card__actions">
-          <Link to={`/listings/${_id}/edit`} className="btn btn--outline btn--sm">
-            Update
-          </Link>
-          <button
-            type="button"
-            className="btn btn--danger-ghost btn--sm"
-            onClick={() => onDelete(listing)}
-            disabled={deleting}
-          >
-            {deleting ? 'Deleting…' : 'Delete'}
-          </button>
+        <div className="listing-row__footer">
+          <p className="listing-row__rating">
+            {Number(rating || 0).toFixed(1)} <span className="listing-row__star">&#9733;</span>{' '}
+            <span className="listing-row__reviews">({reviews} reviews)</span>
+          </p>
+
+          {price != null && (
+            <p className="listing-row__price">
+              <strong>${price}</strong> <span>/night</span>
+            </p>
+          )}
         </div>
       </div>
-    </article>
+    </div>
   );
 }

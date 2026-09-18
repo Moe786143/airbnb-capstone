@@ -7,7 +7,6 @@ import App from './App';
 import './styles/index.css';
 import './styles/layout.css';
 import './styles/forms.css';
-import './styles/listings.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

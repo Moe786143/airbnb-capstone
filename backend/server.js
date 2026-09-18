@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -23,6 +24,10 @@ app.use(
 
 // Parse JSON request bodies into req.body.
 app.use(express.json());
+
+// Serve the seeded demo listing photos (backend/public/images/*) at
+// /images/<file> — referenced directly by the accommodation `images` URLs.
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
 // --- Routes ----------------------------------------------------------------
 
