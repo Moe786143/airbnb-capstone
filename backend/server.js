@@ -22,8 +22,12 @@ app.use(
   })
 );
 
-// Parse JSON request bodies into req.body.
-app.use(express.json());
+// Parse JSON request bodies into req.body. The default 100kb limit is too
+// small for the admin app's image uploads, which encode the chosen photo
+// as a base64 data URL and send it inline in the request body — a normal
+// photo easily runs several MB once base64-encoded. 15mb comfortably
+// covers that without leaving the limit effectively unbounded.
+app.use(express.json({ limit: '15mb' }));
 
 // Serve the seeded demo listing photos (backend/public/images/*) at
 // /images/<file> — referenced directly by the accommodation `images` URLs.

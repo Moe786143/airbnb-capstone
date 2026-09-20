@@ -25,9 +25,14 @@ const users = [
   { username: 'jamesguest', password: 'password123', role: 'user' },
 ];
 
-// Where backend/server.js serves backend/public/images/* from — kept in
-// sync with the admin app's default API host (http://localhost:5000).
-const IMAGE_BASE = `http://localhost:${process.env.PORT || 5000}/images`;
+// Where backend/server.js serves backend/public/images/* from. Defaults to
+// localhost for local dev, but MUST be overridden with the backend's real
+// public URL (e.g. https://your-backend.vercel.app) via BACKEND_PUBLIC_URL
+// when seeding a deployed database — otherwise every seeded image URL
+// bakes in "localhost", which doesn't resolve for anyone but whoever is
+// running this script.
+const IMAGE_BASE =
+  `${process.env.BACKEND_PUBLIC_URL || `http://localhost:${process.env.PORT || 5000}`}/images`;
 
 /**
  * Build the 3 sample listings. Takes the host document so each listing can
