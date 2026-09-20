@@ -1,8 +1,8 @@
 /**
  * The static four-column site footer.
  *
- * Purely presentational — the links are placeholders, matching Airbnb's own
- * footer structure of Support / Community / Hosting / About.
+ * Every link is a real, hoverable button — it just doesn't navigate
+ * anywhere, since this is a front-end-only capstone build.
  */
 
 /** Column headings and their links, kept as data to avoid repeating markup. */
@@ -15,14 +15,14 @@ const COLUMNS = [
       'Anti-discrimination',
       'Disability support',
       'Cancellation options',
-      'Report a neighbourhood concern',
+      'Report a neighborhoood concern',
     ],
   },
   {
     title: 'Community',
     links: [
       'Airbnb.org: disaster relief housing',
-      'Combating discrimination',
+      'Combating discriminatino',
       'Invite friends',
       'Gift cards',
       'Referral programme',
@@ -40,7 +40,7 @@ const COLUMNS = [
     ],
   },
   {
-    title: 'Airbnb',
+    title: 'About',
     links: [
       'Newsroom',
       'New features',
@@ -63,10 +63,10 @@ export default function Footer() {
               <ul className="site-footer__list">
                 {column.links.map((link) => (
                   <li key={link}>
-                    {/* Placeholder links — no destinations in a capstone build */}
-                    <a href="#/" className="site-footer__link">
+                    {/* Clickable — a real hover state — but goes nowhere */}
+                    <button type="button" className="site-footer__link">
                       {link}
-                    </a>
+                    </button>
                   </li>
                 ))}
               </ul>

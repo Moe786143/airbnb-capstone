@@ -42,7 +42,13 @@ const buildAccommodations = (host) => [
     subtitle: '3 Room Bedroom',
     type: 'Entire Home',
     location: 'Sandton, Johannesburg',
-    images: [`${IMAGE_BASE}/sandton-city-hotel.png`],
+    images: [
+      `${IMAGE_BASE}/sandton-city-hotel-1.png`,
+      `${IMAGE_BASE}/sandton-city-hotel-2.png`,
+      `${IMAGE_BASE}/sandton-city-hotel-3.png`,
+      `${IMAGE_BASE}/sandton-city-hotel-4.png`,
+      `${IMAGE_BASE}/sandton-city-hotel-5.png`,
+    ],
     guests: 6,
     guestsLabel: '4-6 guests',
     bedrooms: 5,
@@ -51,6 +57,8 @@ const buildAccommodations = (host) => [
     rating: 5.0,
     reviews: 318,
     price: 325,
+    description:
+      "Escape to this stylish 5-bedroom home in the heart of Sandton, Johannesburg, walking distance from Sandton City and the Gautrain station. The open-plan living area is filled with natural light, the kitchen comes fully equipped for longer stays, and each bedroom offers its own quiet retreat after a day exploring the city. Free parking is available on-site, and the neighbourhood's restaurants, shops, and nightlife are all just minutes away on foot. Perfect for families, groups, or business travellers who want comfort without sacrificing convenience.",
   },
   {
     title: 'Woodmead City Hotel',
@@ -85,7 +93,9 @@ const buildAccommodations = (host) => [
   },
 ].map((accommodation) => ({
   ...accommodation,
-  host: host.username,
+  // A readable display name for the listing pages — kept separate from
+  // `host.username` (the login credential), which stays as "sarahhost".
+  host: 'Sarah',
   host_id: host._id,
 }));
 

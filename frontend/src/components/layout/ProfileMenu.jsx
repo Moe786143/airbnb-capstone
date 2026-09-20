@@ -9,8 +9,10 @@ import { useAuth } from '../../context/AuthContext';
  * "View reservations" and "Log out".
  *
  * @param {Function} onViewReservations - opens the reservations dialog
+ * @param {boolean} [compact] - icon-only, no text label — used on the home
+ *   page's dark nav, which shows just the burger + avatar circle
  */
-export default function ProfileMenu({ onViewReservations }) {
+export default function ProfileMenu({ onViewReservations, compact = false }) {
   const { user, isAuthenticated, restoring, openLogin, signOut } = useAuth();
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
@@ -37,6 +39,8 @@ export default function ProfileMenu({ onViewReservations }) {
     };
   }, [open]);
 
+  const triggerClass = `profile-trigger${compact ? ' profile-trigger--compact' : ''}`;
+
   // While the stored token is being validated, show a neutral placeholder
   // rather than flashing "Log in" at a user who is actually signed in.
   if (restoring) {
@@ -45,13 +49,21 @@ export default function ProfileMenu({ onViewReservations }) {
 
   if (!isAuthenticated) {
     return (
-      <button type="button" className="profile-trigger" onClick={openLogin}>
+      <button type="button" className={triggerClass} onClick={openLogin}>
         <span className="profile-trigger__burger" aria-hidden="true">
           <span />
           <span />
           <span />
         </span>
-        <span className="profile-trigger__label">Log in</span>
+        {compact ? (
+          <span className="profile-trigger__avatar profile-trigger__avatar--guest" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5z" />
+            </svg>
+          </span>
+        ) : (
+          <span className="profile-trigger__label">Log in</span>
+        )}
       </button>
     );
   }
@@ -60,7 +72,7 @@ export default function ProfileMenu({ onViewReservations }) {
     <div className="profile-menu" ref={containerRef}>
       <button
         type="button"
-        className="profile-trigger"
+        className={triggerClass}
         onClick={() => setOpen((isOpen) => !isOpen)}
         aria-expanded={open}
         aria-haspopup="menu"
@@ -74,7 +86,7 @@ export default function ProfileMenu({ onViewReservations }) {
         <span className="profile-trigger__avatar">
           {user.username.charAt(0).toUpperCase()}
         </span>
-        <span className="profile-trigger__label">{user.username}</span>
+        {!compact && <span className="profile-trigger__label">{user.username}</span>}
       </button>
 
       {open && (

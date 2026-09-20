@@ -46,11 +46,14 @@ export default function CostCalculator({
 
   const nights = countNights(checkIn, checkOut);
 
-  // Recomputed whenever the dates change — this is what makes the breakdown
-  // "live". useMemo keeps it from recalculating on unrelated re-renders.
+  // Recomputed whenever the dates or guest count change — this is what
+  // makes the breakdown "live". Guests beyond the first two add their own
+  // fee and a cleaning-fee bump, so the total moves with the party size,
+  // not just the date range. useMemo keeps it from recalculating on
+  // unrelated re-renders.
   const breakdown = useMemo(
-    () => calculateBreakdown(accommodation, nights),
-    [accommodation, nights]
+    () => calculateBreakdown(accommodation, nights, guests),
+    [accommodation, nights, guests]
   );
 
   /**
@@ -90,8 +93,18 @@ export default function CostCalculator({
     update({ checkIn: value });
   };
 
-  /** POST the booking, then report success or the server's error message. */
+  /**
+   * POST the booking, then report success or the server's error message.
+   * Reserve stays a single button in both states (matching Figma) — when
+   * there's no session, clicking it opens the login dialog instead of
+   * submitting, rather than swapping to a separate "log in" label.
+   */
   const handleReserve = async () => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
+
     if (validationError) {
       setError(validationError);
       return;
@@ -186,32 +199,19 @@ export default function CostCalculator({
         </label>
       </div>
 
-      {/* Reserve / log-in prompt */}
-      {isAuthenticated ? (
-        <button
-          type="button"
-          className="btn btn--primary btn--block btn--lg"
-          onClick={handleReserve}
-          disabled={submitting || Boolean(validationError)}
-        >
-          {submitting ? 'Reserving…' : 'Reserve'}
-        </button>
-      ) : (
-        <>
-          <button
-            type="button"
-            className="btn btn--primary btn--block btn--lg"
-            onClick={openLogin}
-          >
-            Log in to book
-          </button>
-          <p className="booking-card__note">
-            You need an account to reserve this stay. You won&apos;t be charged yet.
-          </p>
-        </>
-      )}
+      {/* Reserve — always the same button and label. Signed out, clicking
+          it opens the login dialog (the "you need to log in" prompt)
+          instead of submitting; signed in, it submits the booking. */}
+      <button
+        type="button"
+        className="btn btn--primary btn--block booking-card__reserve"
+        onClick={handleReserve}
+        disabled={submitting || (isAuthenticated && Boolean(validationError))}
+      >
+        {submitting ? 'Reserving…' : 'Reserve'}
+      </button>
 
-      {isAuthenticated && !validationError && !success && (
+      {!error && !success && (
         <p className="booking-card__note">You won&apos;t be charged yet</p>
       )}
 
@@ -254,6 +254,18 @@ export default function CostCalculator({
             </div>
           )}
 
+          {/* Only shown once the party is bigger than the two guests
+              already covered by the nightly rate. */}
+          {breakdown.extraGuestFee > 0 && (
+            <div className="breakdown__row">
+              <span className="breakdown__label breakdown__label--underline">
+                Extra guest fee &middot; {breakdown.extraGuests} extra guest
+                {breakdown.extraGuests === 1 ? '' : 's'}
+              </span>
+              <span>{formatCurrency(breakdown.extraGuestFee)}</span>
+            </div>
+          )}
+
           <div className="breakdown__row">
             <span className="breakdown__label breakdown__label--underline">Cleaning fee</span>
             <span>{formatCurrency(breakdown.cleaningFee)}</span>
@@ -272,7 +284,7 @@ export default function CostCalculator({
           </div>
 
           <div className="breakdown__total">
-            <span>Total before taxes</span>
+            <span>Total</span>
             <span>{formatCurrency(breakdown.total)}</span>
           </div>
         </div>

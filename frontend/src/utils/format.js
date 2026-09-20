@@ -76,40 +76,62 @@ export const countNights = (checkIn, checkOut) => {
   return nights > 0 ? nights : 0;
 };
 
+// Guests beyond this many cost extra — mirrors the backend's
+// BASE_INCLUDED_GUESTS in reservationController.js. Keep the two in sync.
+const BASE_INCLUDED_GUESTS = 2;
+const EXTRA_GUEST_FEE_PER_NIGHT = 15;
+const EXTRA_GUEST_CLEANING_FEE = 10;
+
 /**
  * Work out the full cost breakdown for a stay.
  *
  * Mirrors the backend formula:
- *   (price x nights) - weekly discount + cleaning + service + taxes
+ *   (price x nights) + extra-guest fee - weekly discount + cleaning +
+ *   service + taxes
  * where the weekly discount is a percentage that only applies to stays of
- * 7 nights or more.
+ * 7 nights or more, and the extra-guest fee/cleaning bump only apply once
+ * the party is bigger than BASE_INCLUDED_GUESTS — more guests means more
+ * rooms to turn over and more wear on the place, so the price moves with
+ * the guest count, not just the date range.
  *
  * @param {object} accommodation - the listing being priced
  * @param {number} nights
- * @returns {{nights, nightlySubtotal, discount, cleaningFee, serviceFee, occupancyTaxes, total}}
+ * @param {number} [guests=1]
+ * @returns {{nights, nightlySubtotal, extraGuests, extraGuestFee, discount, cleaningFee, serviceFee, occupancyTaxes, total}}
  */
-export const calculateBreakdown = (accommodation, nights) => {
+export const calculateBreakdown = (accommodation, nights, guests = 1) => {
   const price = accommodation?.price || 0;
   const nightlySubtotal = price * nights;
+
+  const extraGuests = Math.max(0, (guests || 1) - BASE_INCLUDED_GUESTS);
+  const extraGuestFee = extraGuests * EXTRA_GUEST_FEE_PER_NIGHT * nights;
 
   const discount =
     nights >= 7 && accommodation?.weeklyDiscount
       ? nightlySubtotal * (accommodation.weeklyDiscount / 100)
       : 0;
 
-  const cleaningFee = accommodation?.cleaningFee || 0;
+  const cleaningFee = (accommodation?.cleaningFee || 0) + extraGuests * EXTRA_GUEST_CLEANING_FEE;
   const serviceFee = accommodation?.serviceFee || 0;
   const occupancyTaxes = accommodation?.occupancyTaxes || 0;
 
   const total =
     Math.round(
-      (nightlySubtotal - discount + cleaningFee + serviceFee + occupancyTaxes) * 100
+      (nightlySubtotal +
+        extraGuestFee -
+        discount +
+        cleaningFee +
+        serviceFee +
+        occupancyTaxes) *
+        100
     ) / 100;
 
   return {
     nights,
     price,
     nightlySubtotal,
+    extraGuests,
+    extraGuestFee,
     discount,
     cleaningFee,
     serviceFee,

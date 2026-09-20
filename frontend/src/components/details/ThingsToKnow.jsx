@@ -2,67 +2,67 @@
  * "Things to know" — the three static policy columns at the foot of the
  * details page: house rules, health & safety, and the cancellation policy.
  *
- * Check-in and check-out times reflect whether the listing offers self
- * check-in; everything else is the same standard policy text for every
- * listing, which is how Airbnb presents it too.
- *
- * @param {boolean} selfCheckIn
- * @param {boolean} enhancedCleaning
- * @param {number} guests - maximum occupancy, quoted in the house rules
+ * Figma shows this as fixed policy copy (not derived per listing), so it's
+ * rendered literally here rather than built from accommodation fields.
  */
-export default function ThingsToKnow({ selfCheckIn, enhancedCleaning, guests }) {
-  const columns = [
-    {
-      title: 'House rules',
-      items: [
-        selfCheckIn ? 'Check-in: anytime after 3:00 pm' : 'Check-in: 3:00 pm — 8:00 pm',
-        'Check-out before 11:00 am',
-        `${guests} guests maximum`,
-        'No parties or events',
-        'No smoking',
-      ],
-    },
-    {
-      title: 'Health & safety',
-      items: [
-        enhancedCleaning
-          ? "Committed to Airbnb's enhanced cleaning process"
-          : 'Standard cleaning between stays',
-        "Airbnb's social-distancing and other COVID-19-related guidelines apply",
-        'Carbon monoxide alarm',
-        'Smoke alarm',
-        'Security deposit — if you damage the home, you may be charged',
-      ],
-    },
-    {
-      title: 'Cancellation policy',
-      items: [
-        'Free cancellation for 48 hours',
-        'Review the full policy before booking',
-        'Cancel before check-in for a partial refund',
-        'Refunds are processed within 10 days',
-      ],
-    },
-  ];
-
+export default function ThingsToKnow() {
   return (
     <section className="detail-section detail-section--last">
       <h2 className="detail-section__title">Things to know</h2>
 
       <div className="know-grid">
-        {columns.map((column) => (
-          <div className="know-column" key={column.title}>
-            <h3 className="know-column__title">{column.title}</h3>
-            <ul className="know-column__list">
-              {column.items.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-            <button type="button" className="link-button">
-              Show more
-            </button>
-          </div>
-        ))}
+        <div className="know-column">
+          <h3 className="know-column__title">House rules</h3>
+          <ul className="know-column__list">
+            <li>Check-in: After 4:00 PM</li>
+            <li>Checkout: 10:00 AM</li>
+            <li>Self check-in with lockbox</li>
+            <li>Not suitable for infants (under 2 years)</li>
+            <li>No smoking</li>
+            <li>No pets</li>
+            <li>No parties or events</li>
+          </ul>
+        </div>
+
+        <div className="know-column">
+          <h3 className="know-column__title">Health &amp; safety</h3>
+          <ul className="know-column__list">
+            <li>
+              Committed to Airbnb&apos;s enhanced cleaning process.{' '}
+              <button type="button" className="link-button link-button--inline">
+                Show more
+              </button>
+            </li>
+            <li>Airbnb&apos;s social-distancing and other COVID-19-related guidelines apply</li>
+            <li>Carbon monoxide alarm</li>
+            <li>Smoke alarm</li>
+            <li>Security deposit — up to $566 if you damage the home</li>
+          </ul>
+        </div>
+
+        <div className="know-column">
+          <h3 className="know-column__title">Cancellation policy</h3>
+          <p className="know-column__muted">Free cancellation before Feb 14</p>
+          <button type="button" className="link-button link-button--chevron">
+            Show more
+            <svg
+              className="know-column__chevron"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M9 6l6 6-6 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
     </section>
   );

@@ -5,31 +5,47 @@ const Accommodation = require('../models/Accommodation');
 /** Number of milliseconds in one day — used to convert a date range to nights. */
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
+// Guests beyond this many cost extra — mirrors the frontend's
+// BASE_INCLUDED_GUESTS in utils/format.js. Keep the two in sync.
+const BASE_INCLUDED_GUESTS = 2;
+const EXTRA_GUEST_FEE_PER_NIGHT = 15;
+const EXTRA_GUEST_CLEANING_FEE = 10;
+
 /**
  * Work out what a stay costs, server-side, from the listing's own pricing.
  * The client never gets to set its own total — it may send one, but this
  * value is what gets stored.
  *
- * Formula: (nightly rate x nights) - weekly discount + cleaning + service + taxes
- * The weekly discount is a percentage applied to the nightly subtotal for
- * stays of 7 nights or more.
+ * Formula: (nightly rate x nights) + extra-guest fee - weekly discount +
+ * cleaning + service + taxes. The weekly discount is a percentage applied
+ * to the nightly subtotal for stays of 7 nights or more. The extra-guest
+ * fee, and a bump to the cleaning fee, only apply once the party is
+ * bigger than BASE_INCLUDED_GUESTS — more guests means more rooms to
+ * turn over and more wear on the place.
  *
  * @param {object} accommodation - the listing being booked
  * @param {number} nights - length of the stay in nights
+ * @param {number} guests - size of the party
  * @returns {number} the total cost, rounded to 2 decimal places
  */
-const calculateTotalCost = (accommodation, nights) => {
+const calculateTotalCost = (accommodation, nights, guests) => {
   const nightlySubtotal = accommodation.price * nights;
+
+  const extraGuests = Math.max(0, (guests || 1) - BASE_INCLUDED_GUESTS);
+  const extraGuestFee = extraGuests * EXTRA_GUEST_FEE_PER_NIGHT * nights;
 
   const discount =
     nights >= 7 && accommodation.weeklyDiscount
       ? nightlySubtotal * (accommodation.weeklyDiscount / 100)
       : 0;
 
+  const cleaningFee = (accommodation.cleaningFee || 0) + extraGuests * EXTRA_GUEST_CLEANING_FEE;
+
   const total =
-    nightlySubtotal -
+    nightlySubtotal +
+    extraGuestFee -
     discount +
-    (accommodation.cleaningFee || 0) +
+    cleaningFee +
     (accommodation.serviceFee || 0) +
     (accommodation.occupancyTaxes || 0);
 
@@ -126,7 +142,7 @@ const createReservation = async (req, res) => {
       checkIn: checkInDate,
       checkOut: checkOutDate,
       guests: guestCount,
-      totalCost: calculateTotalCost(accommodation, nights),
+      totalCost: calculateTotalCost(accommodation, nights, guestCount),
     });
 
     return res.status(201).json(reservation);

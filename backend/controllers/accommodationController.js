@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Accommodation = require('../models/Accommodation');
+const Reservation = require('../models/Reservation');
 
 /**
  * Validate the body of a create/update request for an accommodation.
@@ -99,6 +100,9 @@ const createAccommodation = async (req, res) => {
  *   location  - case-insensitive partial match (e.g. ?location=paris)
  *   type      - exact, case-insensitive match
  *   guests    - minimum capacity
+ *   checkIn   - ISO date; must be paired with checkOut. Excludes listings
+ *               with a reservation that overlaps the requested stay.
+ *   checkOut  - ISO date; must be paired with checkIn and be after it.
  *   minPrice  - lower price bound (inclusive)
  *   maxPrice  - upper price bound (inclusive)
  *   sort      - 'price' | '-price' | 'rating' | '-rating'
@@ -109,7 +113,8 @@ const createAccommodation = async (req, res) => {
  */
 const getAccommodations = async (req, res) => {
   try {
-    const { location, type, guests, minPrice, maxPrice, sort, page, limit } = req.query;
+    const { location, type, guests, checkIn, checkOut, minPrice, maxPrice, sort, page, limit } =
+      req.query;
     const filter = {};
 
     // Partial, case-insensitive location search. The user's input is escaped
@@ -132,6 +137,41 @@ const getAccommodations = async (req, res) => {
           .json({ message: 'guests must be a positive number' });
       }
       filter.guests = { $gte: minGuests };
+    }
+
+    // Availability — both dates are required together, so a search for
+    // "free Feb 19-26" actually excludes anything already booked then,
+    // the same overlap rule createReservation uses to reject a conflicting
+    // booking (each stay starts before the other ends).
+    if (checkIn !== undefined || checkOut !== undefined) {
+      if (checkIn === undefined || checkOut === undefined) {
+        return res
+          .status(400)
+          .json({ message: 'checkIn and checkOut must be provided together' });
+      }
+
+      const checkInDate = new Date(checkIn);
+      const checkOutDate = new Date(checkOut);
+
+      if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime())) {
+        return res.status(400).json({
+          message: 'checkIn and checkOut must be valid dates (e.g. 2026-09-01)',
+        });
+      }
+      if (checkOutDate <= checkInDate) {
+        return res
+          .status(400)
+          .json({ message: 'checkOut must be after checkIn' });
+      }
+
+      const bookedIds = await Reservation.find({
+        checkIn: { $lt: checkOutDate },
+        checkOut: { $gt: checkInDate },
+      }).distinct('accommodation_id');
+
+      if (bookedIds.length > 0) {
+        filter._id = { $nin: bookedIds };
+      }
     }
 
     // Price range — both bounds are optional and can be combined.

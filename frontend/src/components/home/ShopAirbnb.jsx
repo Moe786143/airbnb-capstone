@@ -1,33 +1,31 @@
-import SafeImage from '../ui/SafeImage';
+import giftCardsImage from '../../assets/shop/gift-cards.png';
 
 /**
- * "Shop Airbnb" — a two-column band promoting gift cards.
+ * "Shop Airbnb gift cards" — a plain two-column band: a heading and a
+ * static "Learn more" button on the left, the gift card artwork (the
+ * actual Figma export, all three cards already composited into one
+ * image) on the right. No card background or body copy — the Figma
+ * section is just that, on the plain page background.
  *
- * Copy and a static button in the left column, the gift card artwork in the
- * right. Stacks to one column on small screens.
+ * Purely presentational — the button doesn't lead anywhere, just a
+ * hover lift, same treatment as the other static sections on this page.
  */
 export default function ShopAirbnb() {
   return (
     <section className="section container">
       <div className="shop">
         <div className="shop__text">
-          <h2 className="shop__title">Shop Airbnb gift cards</h2>
-          <p className="shop__copy">
-            Give the gift of travel. Airbnb gift cards never expire and can be
-            used towards any stay or experience, anywhere in the world.
-          </p>
+          <h2 className="shop__title">
+            Shop Airbnb
+            <br />
+            gift cards
+          </h2>
           <button type="button" className="btn btn--dark">
-            Shop now
+            Learn more
           </button>
         </div>
 
-        <div className="shop__media">
-          <SafeImage
-            src="https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&w=1000&q=70"
-            alt="An Airbnb gift card presented in a wrapped box"
-            className="shop__image"
-          />
-        </div>
+        <img src={giftCardsImage} alt="Airbnb gift cards" className="shop__image" />
       </div>
     </section>
   );

@@ -1,27 +1,17 @@
-/**
- * "Discover Airbnb Experiences" — two large promo panels side by side.
- *
- * Each panel is a background photo with a title and a static button, one
- * for in-person experiences and one for online ones. The buttons are
- * deliberately inert: Experiences are out of scope for this build.
- */
+import tripPhoto from '../../assets/experiences/things-to-do-on-your-trip.png';
+import homePhoto from '../../assets/experiences/things-to-do-from-home.png';
 
-/** The two panels, as data so the markup is written once. */
+/**
+ * "Discover Airbnb Experiences" — two square promo panels side by side.
+ *
+ * Both photos are the actual reference exports, title, button and all
+ * baked into the pixels, so the cards are just the images — no live text
+ * or button rendered on top of them. Purely presentational: no click
+ * behaviour, just a hover lift for a bit of life.
+ */
 const PANELS = [
-  {
-    title: 'Things to do on your trip',
-    copy: 'Book unforgettable activities hosted by locals — from pasta making in Rome to surfing at dawn.',
-    button: 'Experiences',
-    image:
-      'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1200&q=70',
-  },
-  {
-    title: 'Things to do at home',
-    copy: 'Join live, interactive sessions with hosts around the world without leaving your sofa.',
-    button: 'Online Experiences',
-    image:
-      'https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1200&q=70',
-  },
+  { alt: 'Things to do on your trip — Experiences', image: tripPhoto },
+  { alt: 'Things to do from home — Online Experiences', image: homePhoto },
 ];
 
 export default function ExperiencesSection() {
@@ -33,18 +23,11 @@ export default function ExperiencesSection() {
         {PANELS.map((panel) => (
           <article
             className="experience-card"
-            key={panel.title}
+            key={panel.alt}
             style={{ backgroundImage: `url(${panel.image})` }}
-          >
-            <div className="experience-card__overlay" />
-            <div className="experience-card__content">
-              <h3 className="experience-card__title">{panel.title}</h3>
-              <p className="experience-card__copy">{panel.copy}</p>
-              <button type="button" className="btn btn--white">
-                {panel.button}
-              </button>
-            </div>
-          </article>
+            role="img"
+            aria-label={panel.alt}
+          />
         ))}
       </div>
     </section>
